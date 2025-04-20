@@ -1,0 +1,11 @@
+{
+    "ip": "localhost",
+    "port": 3306,
+    "username": "root",
+    "password": "<password>",
+    "db_name": "test",
+    "min_size": 100,
+    "max_size": 1024,
+    "max_idle_time": 5000,
+    "timeout": 1000
+}

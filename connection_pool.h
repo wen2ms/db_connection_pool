@@ -18,6 +18,8 @@ class ConnectionPool {
   private:
     ConnectionPool() = default;
 
+    bool parse_json_file();
+
     std::string ip_;
     std::string user_;
     std::string password_;
