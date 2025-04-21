@@ -11,6 +11,27 @@ ConnectionPool* ConnectionPool::get_connection_pool() {
     return &connection_pool;
 }
 
+std::shared_ptr<MysqlConnection> ConnectionPool::get_connection() {
+    std::unique_lock<std::mutex> locker(mutex_);
+    while (connection_queue_.empty()) {
+        if (std::cv_status::timeout == condition_.wait_for(locker, std::chrono::milliseconds(timeout_))) {
+            if (connection_queue_.empty()) {
+                continue;
+            }
+        }
+    }
+
+    std::shared_ptr<MysqlConnection> connection_ptr(connection_queue_.front(), [this](MysqlConnection* connection) {
+        std::lock_guard<std::mutex> locker(mutex_);
+        connection->refresh_alive_time();
+        connection_queue_.push(connection);
+    });
+    connection_queue_.pop();
+    condition_.notify_all();
+
+    return connection_ptr;
+}
+
 bool ConnectionPool::parse_json_file() {
     std::ifstream infile("dbconf.json");
     Json::Reader reader;
@@ -55,8 +76,8 @@ void ConnectionPool::produce_connection() {
         while (connection_queue_.size() >= min_size_) {
             condition_.wait(locker);
         }
-
         add_connection();
+        condition_.notify_all();
     }
 }
 

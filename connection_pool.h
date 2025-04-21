@@ -5,6 +5,7 @@
 #include <iostream>
 #include <mutex>
 #include <queue>
+#include <memory>
 
 #include "mysql_connection.h"
 
@@ -14,6 +15,7 @@ class ConnectionPool {
     ConnectionPool& operator=(const ConnectionPool& other) = delete;
 
     static ConnectionPool* get_connection_pool();
+    std::shared_ptr<MysqlConnection> get_connection();    
 
   private:
     ConnectionPool();
