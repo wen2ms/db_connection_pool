@@ -5,6 +5,14 @@
 #include <fstream>
 #include <thread>
 
+ConnectionPool::~ConnectionPool() {
+    while (!connection_queue_.empty()) {
+        MysqlConnection* connection = connection_queue_.front();
+        connection_queue_.pop();
+        delete connection;
+    }
+}
+
 ConnectionPool* ConnectionPool::get_connection_pool() {
     static ConnectionPool connection_pool;
 
@@ -84,6 +92,8 @@ void ConnectionPool::produce_connection() {
 void ConnectionPool::recycle_connection() {
     while (true) {
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
+
+        std::lock_guard<std::mutex> locker(mutex_);
         while (connection_queue_.size() > min_size_) {
             MysqlConnection* connection = connection_queue_.front();
             if (connection->get_alive_time() >= max_idle_time_) {

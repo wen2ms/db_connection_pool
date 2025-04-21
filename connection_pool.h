@@ -11,11 +11,13 @@
 
 class ConnectionPool {
   public:
+    ~ConnectionPool();
+
     ConnectionPool(const ConnectionPool& other) = delete;
     ConnectionPool& operator=(const ConnectionPool& other) = delete;
 
     static ConnectionPool* get_connection_pool();
-    std::shared_ptr<MysqlConnection> get_connection();    
+    std::shared_ptr<MysqlConnection> get_connection();
 
   private:
     ConnectionPool();
