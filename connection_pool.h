@@ -16,9 +16,11 @@ class ConnectionPool {
     static ConnectionPool* get_connection_pool();
 
   private:
-    ConnectionPool() = default;
+    ConnectionPool();
 
     bool parse_json_file();
+    void produce_connection();
+    void recycle_connection();
 
     std::string ip_;
     std::string user_;
