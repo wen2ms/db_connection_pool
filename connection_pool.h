@@ -22,6 +22,8 @@ class ConnectionPool {
     void produce_connection();
     void recycle_connection();
 
+    void add_connection();
+
     std::string ip_;
     std::string user_;
     std::string password_;

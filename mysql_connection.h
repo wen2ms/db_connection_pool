@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <mysql.h>
+#include <chrono>
 
 class MysqlConnection {
   public:
@@ -20,12 +21,17 @@ class MysqlConnection {
     bool commit();
     bool rollback();
 
+    void refresh_alive_time();
+    long long get_alive_time();
+
   private:
     void free_result();
 
     MYSQL* connection_;
     MYSQL_RES* result_;
     MYSQL_ROW row_;
+
+    std::chrono::steady_clock::time_point alive_time_;
 };
 
 #endif  // MYSQL_CONNECTION_H

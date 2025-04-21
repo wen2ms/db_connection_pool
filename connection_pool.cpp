@@ -39,9 +39,7 @@ ConnectionPool::ConnectionPool() {
     }
 
     for (int i = 0; i < min_size_; ++i) {
-        MysqlConnection* connection = new MysqlConnection;
-        connection->connect(user_, password_, db_name_, ip_, port_);
-        connection_queue_.push(connection);
+        add_connection();
     }
 
     std::thread producer(&ConnectionPool::produce_connection, this);
@@ -51,6 +49,35 @@ ConnectionPool::ConnectionPool() {
     recycler.detach();
 }
 
-void ConnectionPool::produce_connection() {}
+void ConnectionPool::produce_connection() {
+    while (true) {
+        std::unique_lock<std::mutex> locker(mutex_);
+        while (connection_queue_.size() >= min_size_) {
+            condition_.wait(locker);
+        }
 
-void ConnectionPool::recycle_connection() {}
+        add_connection();
+    }
+}
+
+void ConnectionPool::recycle_connection() {
+    while (true) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
+        while (connection_queue_.size() > min_size_) {
+            MysqlConnection* connection = connection_queue_.front();
+            if (connection->get_alive_time() >= max_idle_time_) {
+                connection_queue_.pop();
+                delete connection;
+            } else {
+                break;
+            }
+        }
+    }
+}
+
+void ConnectionPool::add_connection() {
+    MysqlConnection* connection = new MysqlConnection;
+    connection->connect(user_, password_, db_name_, ip_, port_);
+    connection->refresh_alive_time();
+    connection_queue_.push(connection);
+}

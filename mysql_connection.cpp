@@ -66,6 +66,16 @@ bool MysqlConnection::rollback() {
     return mysql_rollback(connection_);
 }
 
+void MysqlConnection::refresh_alive_time() {
+    alive_time_ = std::chrono::steady_clock::now();
+}
+
+long long MysqlConnection::get_alive_time() {
+    std::chrono::nanoseconds nanosec = std::chrono::steady_clock::now() - alive_time_;
+    std::chrono::milliseconds millsec = std::chrono::duration_cast<std::chrono::milliseconds>(nanosec);
+    return millsec.count();
+}
+
 void MysqlConnection::free_result() {
     if (result_) {
         mysql_free_result(result_);
