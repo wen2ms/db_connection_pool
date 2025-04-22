@@ -38,7 +38,10 @@ bool MysqlConnection::query(std::string sql) {
 bool MysqlConnection::next() {
     if (result_ != nullptr) {
         row_ = mysql_fetch_row(result_);
-        return true;
+
+        if (row_ != nullptr) {
+            return true;
+        }
     }
     return false;
 }
