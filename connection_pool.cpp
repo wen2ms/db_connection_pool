@@ -41,7 +41,7 @@ std::shared_ptr<MysqlConnection> ConnectionPool::get_connection() {
 }
 
 bool ConnectionPool::parse_json_file() {
-    std::ifstream infile("dbconf.json");
+    std::ifstream infile("<absolute_file_path>");
     Json::Reader reader;
     Json::Value root;
 
